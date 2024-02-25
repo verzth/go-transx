@@ -23,7 +23,7 @@ func transform() {
 }
 
 func transformSlice() {
-	a := []A{{Name: "John", Age: 20}, {Name: "Doe", Age: 30}}
+	a := []A{{Name: "John", Age: 20, C: C{School: "Harvard"}}, {Name: "Doe", Age: 30}}
 	b := []B{}
 	err := transx.TransformSlice(&a, &b)
 	if err != nil {
@@ -37,9 +37,15 @@ func transformSlice() {
 type A struct {
 	Name string `transx:"name"`
 	Age  int    `transx:"age"`
+	C
 }
 
 type B struct {
-	Nama string `transx:"name"`
-	Umur int    `transx:"age"`
+	Nama    string `transx:"name"`
+	Umur    int    `transx:"age"`
+	Sekolah string `transx:"school"`
+}
+
+type C struct {
+	School string `transx:"school"`
 }

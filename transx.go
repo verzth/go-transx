@@ -14,9 +14,16 @@ func Transform(source any, dest any) error {
 		for i := 0; i < sourceT.NumField(); i++ {
 			srcField, ok := sourceT.FieldByName(sourceT.Field(i).Name)
 			if ok {
-				tag := srcField.Tag.Get("transx")
-				if tag != "" && tag != "-" {
-					valMaps[tag] = sourceV.Field(i)
+				if srcField.Type.Kind() == reflect.Struct {
+					err := Transform(sourceV.Field(i).Interface(), dest)
+					if err != nil {
+						return err
+					}
+				} else {
+					tag := srcField.Tag.Get("transx")
+					if tag != "" && tag != "-" {
+						valMaps[tag] = sourceV.Field(i)
+					}
 				}
 			}
 		}
@@ -24,9 +31,16 @@ func Transform(source any, dest any) error {
 		for i := 0; i < sourceT.Elem().NumField(); i++ {
 			srcField, ok := sourceT.Elem().FieldByName(sourceT.Elem().Field(i).Name)
 			if ok {
-				tag := srcField.Tag.Get("transx")
-				if tag != "" && tag != "-" {
-					valMaps[tag] = sourceV.Elem().Field(i)
+				if srcField.Type.Kind() == reflect.Struct {
+					err := Transform(sourceV.Elem().Field(i).Interface(), dest)
+					if err != nil {
+						return err
+					}
+				} else {
+					tag := srcField.Tag.Get("transx")
+					if tag != "" && tag != "-" {
+						valMaps[tag] = sourceV.Elem().Field(i)
+					}
 				}
 			}
 		}
@@ -76,12 +90,22 @@ func TransformSlice(source any, dest any) error {
 
 	if sourceV.Kind() == reflect.Slice {
 		for i := 0; i < sourceV.Len(); i++ {
-			destR := reflect.New(destV.Elem().Type().Elem())
+			var destR reflect.Value
+			destC := destV.Elem().Type().Elem()
+			if destC.Kind() == reflect.Ptr && destC.Elem().Kind() == reflect.Struct {
+				destR = reflect.New(destC.Elem())
+			} else {
+				destR = reflect.New(destC)
+			}
 			err := Transform(sourceV.Index(i).Interface(), destR.Interface())
 			if err != nil {
 				return err
 			}
-			destV.Elem().Set(reflect.Append(destV.Elem(), destR.Elem()))
+			if destC.Kind() == reflect.Ptr {
+				destV.Elem().Set(reflect.Append(destV.Elem(), destR))
+			} else {
+				destV.Elem().Set(reflect.Append(destV.Elem(), destR.Elem()))
+			}
 		}
 	} else if sourceV.Kind() == reflect.Ptr && sourceV.Elem().Kind() == reflect.Slice {
 		for i := 0; i < sourceV.Elem().Len(); i++ {
