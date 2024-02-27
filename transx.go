@@ -1,6 +1,7 @@
 package transx
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -19,6 +20,23 @@ func Transform(source any, dest any) error {
 					if err != nil {
 						return err
 					}
+
+					f, ok := destT.Elem().FieldByName(srcField.Name)
+					if ok {
+						destPtr := reflect.New(f.Type)
+						err = Transform(sourceV.Field(i).Interface(), destPtr.Interface())
+						if err != nil {
+							return err
+						}
+						destV.Elem().FieldByName(sourceT.Field(i).Name).Set(destPtr.Elem())
+					}
+				} else if srcField.Type.Kind() == reflect.Slice {
+					destPtr := reflect.New(destV.Elem().FieldByName(sourceT.Field(i).Name).Type())
+					err := TransformSlice(sourceV.Field(i).Interface(), destPtr.Interface())
+					if err != nil {
+						return err
+					}
+					destV.Elem().FieldByName(sourceT.Field(i).Name).Set(destPtr.Elem())
 				} else {
 					tag := srcField.Tag.Get("transx")
 					if tag != "" && tag != "-" {
@@ -36,6 +54,23 @@ func Transform(source any, dest any) error {
 					if err != nil {
 						return err
 					}
+
+					f, ok := destT.Elem().FieldByName(srcField.Name)
+					if ok {
+						destPtr := reflect.New(f.Type)
+						err = Transform(sourceV.Elem().Field(i).Interface(), destPtr.Interface())
+						if err != nil {
+							return err
+						}
+						destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Set(destPtr.Elem())
+					}
+				} else if srcField.Type.Kind() == reflect.Slice {
+					destPtr := reflect.New(destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Type())
+					err := TransformSlice(sourceV.Elem().Field(i).Interface(), destPtr.Interface())
+					if err != nil {
+						return err
+					}
+					destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Set(destPtr.Elem())
 				} else {
 					tag := srcField.Tag.Get("transx")
 					if tag != "" && tag != "-" {
@@ -47,12 +82,11 @@ func Transform(source any, dest any) error {
 	} else {
 		return ErrSrcNotStruct
 	}
+
 	if destV.Kind() != reflect.Ptr {
 		return ErrDstNotPtrStruct
-	} else {
-		if destV.Elem().Kind() != reflect.Struct {
-			return ErrDstNotPtrStruct
-		}
+	} else if destV.Elem().Kind() != reflect.Struct {
+		return ErrDstNotPtrStruct
 	}
 
 	for i := 0; i < destT.Elem().NumField(); i++ {
@@ -81,10 +115,12 @@ func TransformSlice(source any, dest any) error {
 	destV := reflect.ValueOf(dest)
 
 	if destV.Kind() != reflect.Ptr {
+		fmt.Println(destV.Kind(), destV.Type())
 		return ErrDstSliceNotPtr
 	}
 
 	if destV.Elem().Kind() != reflect.Slice {
+		fmt.Println(destV.Elem().Kind())
 		return ErrDstNotSlice
 	}
 

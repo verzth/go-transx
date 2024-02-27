@@ -12,7 +12,7 @@ func main() {
 }
 
 func transform() {
-	a := A{Name: "John", Age: 20}
+	a := A{Name: "John", Age: 20, C: C{School: "Harvard"}, ID: D{Number: 1}, IDX: &D{Number: 1}, IDs: []D{{Number: 2}}, IDXs: []*D{{Number: 2}}}
 	b := B{}
 	err := transx.Transform(a, &b)
 	if err != nil {
@@ -23,7 +23,7 @@ func transform() {
 }
 
 func transformSlice() {
-	a := []A{{Name: "John", Age: 20, C: C{School: "Harvard"}}, {Name: "Doe", Age: 30}}
+	a := []A{{Name: "John", Age: 20, C: C{School: "Harvard"}, ID: D{Number: 1}, IDX: &D{Number: 1}, IDs: []D{{Number: 2}}, IDXs: []*D{{Number: 2}}}, {Name: "Doe", Age: 30, ID: D{Number: 2}}}
 	b := []B{}
 	err := transx.TransformSlice(&a, &b)
 	if err != nil {
@@ -38,14 +38,30 @@ type A struct {
 	Name string `transx:"name"`
 	Age  int    `transx:"age"`
 	C
+	ID   D    `transx:"id"`
+	IDX  *D   `transx:"idx"`
+	IDs  []D  `transx:"ids"`
+	IDXs []*D `transx:"idxs"`
 }
 
 type B struct {
 	Nama    string `transx:"name"`
 	Umur    int    `transx:"age"`
 	Sekolah string `transx:"school"`
+	ID      E      `transx:"id"`
+	IDX     *D     `transx:"idx"`
+	IDs     []E    `transx:"ids"`
+	IDXs    []*E   `transx:"idxs"`
 }
 
 type C struct {
 	School string `transx:"school"`
+}
+
+type D struct {
+	Number int `transx:"number"`
+}
+
+type E struct {
+	Nomor int `transx:"number"`
 }
