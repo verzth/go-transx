@@ -133,9 +133,14 @@ func TransformSlice(source any, dest any) error {
 			} else {
 				destR = reflect.New(destC)
 			}
-			err := Transform(sourceV.Index(i).Interface(), destR.Interface())
-			if err != nil {
-				return err
+			if destR.Elem().Kind() == reflect.Struct {
+				fmt.Println("HERE A", destR.Elem().Kind())
+				err := Transform(sourceV.Index(i).Interface(), destR.Interface())
+				if err != nil {
+					return err
+				}
+			} else {
+				destR.Elem().Set(sourceV.Index(i))
 			}
 			if destC.Kind() == reflect.Ptr {
 				destV.Elem().Set(reflect.Append(destV.Elem(), destR))
@@ -152,9 +157,14 @@ func TransformSlice(source any, dest any) error {
 			} else {
 				destR = reflect.New(destC)
 			}
-			err := Transform(sourceV.Elem().Index(i).Interface(), destR.Interface())
-			if err != nil {
-				return err
+			if destR.Elem().Kind() == reflect.Struct {
+				fmt.Println("HERE B", destR.Elem().Kind())
+				err := Transform(sourceV.Elem().Index(i).Interface(), destR.Interface())
+				if err != nil {
+					return err
+				}
+			} else {
+				destR.Elem().Set(sourceV.Index(i))
 			}
 			if destC.Kind() == reflect.Ptr {
 				destV.Elem().Set(reflect.Append(destV.Elem(), destR))

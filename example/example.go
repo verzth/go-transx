@@ -12,7 +12,7 @@ func main() {
 }
 
 func transform() {
-	a := A{Name: "John", Age: 20, C: C{School: "Harvard"}, ID: D{Number: 1}, IDX: &D{Number: 1}, IDs: []D{{Number: 2}}, IDXs: []*D{{Number: 2}}}
+	a := A{Name: "John", Age: 20, C: C{School: "Harvard"}, ID: D{Number: 1}, IDX: &D{Number: 1}, IDs: []D{{Number: 2}}, IDXs: []*D{{Number: 2}}, List: &X{"a", "b", "c"}, ListX: []X{{"a", "b", "c"}, {"d", "e", "f"}}}
 	b := B{}
 	err := transx.Transform(a, &b)
 	if err != nil {
@@ -34,14 +34,18 @@ func transformSlice() {
 	fmt.Printf("%+v\n", string(jsonStr))
 }
 
+type X []string
+
 type A struct {
 	Name string `transx:"name"`
 	Age  int    `transx:"age"`
 	C
-	ID   D    `transx:"id"`
-	IDX  *D   `transx:"idx"`
-	IDs  []D  `transx:"ids"`
-	IDXs []*D `transx:"idxs"`
+	ID    D    `transx:"id"`
+	IDX   *D   `transx:"idx"`
+	IDs   []D  `transx:"ids"`
+	IDXs  []*D `transx:"idxs"`
+	List  *X   `transx:"list"`
+	ListX []X  `transx:"listx"`
 }
 
 type B struct {
@@ -52,6 +56,8 @@ type B struct {
 	IDX     *D     `transx:"idx"`
 	IDs     []E    `transx:"ids"`
 	IDXs    []*E   `transx:"idxs"`
+	List    *X     `transx:"list"`
+	ListX   []X    `transx:"listx"`
 }
 
 type C struct {
