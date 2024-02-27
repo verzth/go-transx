@@ -15,22 +15,22 @@ func Transform(source any, dest any) error {
 		for i := 0; i < sourceT.NumField(); i++ {
 			srcField, ok := sourceT.FieldByName(sourceT.Field(i).Name)
 			if ok {
+				dstField, dOk := destT.Elem().FieldByName(srcField.Name)
 				if srcField.Type.Kind() == reflect.Struct {
 					err := Transform(sourceV.Field(i).Interface(), dest)
 					if err != nil {
 						return err
 					}
 
-					f, ok := destT.Elem().FieldByName(srcField.Name)
-					if ok {
-						destPtr := reflect.New(f.Type)
+					if dOk {
+						destPtr := reflect.New(dstField.Type)
 						err = Transform(sourceV.Field(i).Interface(), destPtr.Interface())
 						if err != nil {
 							return err
 						}
 						destV.Elem().FieldByName(sourceT.Field(i).Name).Set(destPtr.Elem())
 					}
-				} else if srcField.Type.Kind() == reflect.Slice {
+				} else if srcField.Type.Kind() == reflect.Slice && dOk {
 					destPtr := reflect.New(destV.Elem().FieldByName(sourceT.Field(i).Name).Type())
 					err := TransformSlice(sourceV.Field(i).Interface(), destPtr.Interface())
 					if err != nil {
@@ -49,22 +49,22 @@ func Transform(source any, dest any) error {
 		for i := 0; i < sourceT.Elem().NumField(); i++ {
 			srcField, ok := sourceT.Elem().FieldByName(sourceT.Elem().Field(i).Name)
 			if ok {
+				dstField, dOk := destT.Elem().FieldByName(srcField.Name)
 				if srcField.Type.Kind() == reflect.Struct {
 					err := Transform(sourceV.Elem().Field(i).Interface(), dest)
 					if err != nil {
 						return err
 					}
 
-					f, ok := destT.Elem().FieldByName(srcField.Name)
-					if ok {
-						destPtr := reflect.New(f.Type)
+					if dOk {
+						destPtr := reflect.New(dstField.Type)
 						err = Transform(sourceV.Elem().Field(i).Interface(), destPtr.Interface())
 						if err != nil {
 							return err
 						}
 						destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Set(destPtr.Elem())
 					}
-				} else if srcField.Type.Kind() == reflect.Slice {
+				} else if srcField.Type.Kind() == reflect.Slice && dOk {
 					destPtr := reflect.New(destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Type())
 					err := TransformSlice(sourceV.Elem().Field(i).Interface(), destPtr.Interface())
 					if err != nil {
