@@ -134,7 +134,6 @@ func TransformSlice(source any, dest any) error {
 				destR = reflect.New(destC)
 			}
 			if destR.Elem().Kind() == reflect.Struct {
-				fmt.Println("HERE A", destR.Elem().Kind())
 				err := Transform(sourceV.Index(i).Interface(), destR.Interface())
 				if err != nil {
 					return err
@@ -158,7 +157,6 @@ func TransformSlice(source any, dest any) error {
 				destR = reflect.New(destC)
 			}
 			if destR.Elem().Kind() == reflect.Struct {
-				fmt.Println("HERE B", destR.Elem().Kind())
 				err := Transform(sourceV.Elem().Index(i).Interface(), destR.Interface())
 				if err != nil {
 					return err
