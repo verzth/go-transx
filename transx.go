@@ -41,6 +41,11 @@ func Transform(source any, dest any) error {
 					tag := srcField.Tag.Get("transx")
 					if tag != "" && tag != "-" {
 						valMaps[tag] = sourceV.Field(i)
+					} else if tag == "" {
+						tag = srcField.Tag.Get("json")
+						if tag != "" && tag != "-" {
+							valMaps[tag] = sourceV.Field(i)
+						}
 					}
 				}
 			}
@@ -75,6 +80,11 @@ func Transform(source any, dest any) error {
 					tag := srcField.Tag.Get("transx")
 					if tag != "" && tag != "-" {
 						valMaps[tag] = sourceV.Elem().Field(i)
+					} else if tag == "" {
+						tag = srcField.Tag.Get("json")
+						if tag != "" && tag != "-" {
+							valMaps[tag] = sourceV.Elem().Field(i)
+						}
 					}
 				}
 			}
