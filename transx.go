@@ -17,18 +17,23 @@ func Transform(source any, dest any) error {
 			if ok {
 				dstField, dOk := destT.Elem().FieldByName(srcField.Name)
 				if srcField.Type.Kind() == reflect.Struct {
-					err := Transform(sourceV.Field(i).Interface(), dest)
-					if err != nil {
-						return err
-					}
-
-					if dOk {
-						destPtr := reflect.New(dstField.Type)
-						err = Transform(sourceV.Field(i).Interface(), destPtr.Interface())
+					if srcField.Type == dstField.Type {
+						destV.Elem().FieldByName(sourceT.Field(i).Name).Set(sourceV.Field(i))
+					} else {
+						err := Transform(sourceV.Field(i).Interface(), dest)
 						if err != nil {
 							return err
 						}
-						destV.Elem().FieldByName(sourceT.Field(i).Name).Set(destPtr.Elem())
+
+						if dOk {
+							destPtr := reflect.New(dstField.Type)
+
+							err = Transform(sourceV.Field(i).Interface(), destPtr.Interface())
+							if err != nil {
+								return err
+							}
+							destV.Elem().FieldByName(sourceT.Field(i).Name).Set(destPtr.Elem())
+						}
 					}
 				} else if srcField.Type.Kind() == reflect.Slice && dOk {
 					destPtr := reflect.New(destV.Elem().FieldByName(sourceT.Field(i).Name).Type())
@@ -103,9 +108,17 @@ func Transform(source any, dest any) error {
 		destField, ok := destT.Elem().FieldByName(destT.Elem().Field(i).Name)
 		if ok {
 			tag := destField.Tag.Get("transx")
+
 			if tag != "" && tag != "-" {
 				if val, ok := valMaps[tag]; ok {
 					destV.Elem().Field(i).Set(val)
+				}
+			} else if tag == "" {
+				tag = destField.Tag.Get("json")
+				if tag != "" && tag != "-" {
+					if val, ok := valMaps[tag]; ok {
+						destV.Elem().Field(i).Set(val)
+					}
 				}
 			}
 		}
