@@ -62,7 +62,8 @@ func Transform(source any, dest any) error {
 				dstField, dOk := destT.Elem().FieldByName(srcField.Name)
 				if srcField.Type.Kind() == reflect.Struct {
 					if srcField.Type == dstField.Type {
-						destV.Elem().FieldByName(sourceT.Field(i).Name).Set(sourceV.Field(i))
+						destPtr := reflect.New(dstField.Type)
+						destV.Elem().FieldByName(sourceT.Elem().Field(i).Name).Set(destPtr.Elem())
 					} else {
 						err := Transform(sourceV.Elem().Field(i).Interface(), dest)
 						if err != nil {
